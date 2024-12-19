@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Buddy</title>
+    <link rel="icon" type="image/x-icon" href="/static/icons8-money-bag-pounds-32.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="header">
+    <img src="/static/icons8-money-bag-pounds-80.png" alt="Money Bag Icon" class="header-icon">
+    <h1>Bill Buddy</h1>
+</div>
+
+
+<div class="container">
+    <div class="bills-section">
+        <h2 class="bill-form">Add Monthly Income</h2>
+        <form id="income-form">
+            <label for="monthlyIncome">Monthly Income</label>
+            <input type="number" id="monthlyIncome" name="monthlyIncome" step="0.01" placeholder="Enter your monthly income" required>
+            <button type="submit">Set Income</button>
+        </form>
+
+        <h2 class="bill-form">Add a New Bill</h2>
+        <form id="bill-form">
+            <label for="name">Bill Name</label>
+            <input type="text" id="name" name="name" autocomplete="off" placeholder="Enter bill name" required>
+
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" name="amount" step="0.01" autocomplete="off" placeholder="Enter bill amount" required>
+
+            <label for="dueDate">Due Date</label>
+            <input type="date" id="dueDate" name="dueDate" autocomplete="off" required>
+
+            <button type="submit">Add Bill</button>
+        </form>
+
+        <div class="summary" id="summary-section">
+            <h3>Financial Summary</h3>
+            <p>Total Monthly Income: £<span id="total-income">0</span></p>
+            <p>Total Bills: £<span id="total-bills">0</span></p>
+            <p>Remaining Money: £<span id="remaining-money">0</span></p>
+        </div>
+    </div>
+
+    <div class="bill-list-wrapper">
+        <h2 class="bill-list-title">Bill List</h2>
+        <div class="bill-list-container">
+            <div class="bill-list-header">
+                <div class="sort-dropdown">
+                    <label for="sort-select">Sort By:</label>
+                    <select id="sort-select">
+                        <option value="dueDateAsc">Due Date (First to Last)</option>
+                        <option value="dueDateDesc">Due Date (Last to First)</option>
+                        <option value="amountAsc">Bill Amount (Low to High)</option>
+                        <option value="amountDesc">Bill Amount (High to Low)</option>
+                    </select>
+                </div>
+            </div>
+
+            <table id="bills-table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Bills will be dynamically loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script>
+    // JavaScript code for managing bills tracker functionality
+
+    // Form elements
+    const billForm = document.getElementById('bill-form'); // Form for adding bills
+    const incomeForm = document.getElementById('income-form'); // Form for setting income
+    const billsTableBody = document.getElementById('bills-table').querySelector('tbody'); // Table body for bills list
+    const sortSelect = document.getElementById('sort-select'); // Dropdown for sorting bills
+    const totalIncomeSpan = document.getElementById('total-income'); // Display for total income
+    const totalBillsSpan = document.getElementById('total-bills'); // Display for total bills
+    const remainingMoneySpan = document.getElementById('remaining-money'); // Display for remaining money
+
+    // Variables to store income and bills
+    let monthlyIncome = 0; // Stores the user's monthly income
+    let bills = []; // Array to store bill objects
+
+    // Fetch all bills from the server and render them
+    async function fetchBills() {
+        try {
+            const response = await fetch('http://localhost:8080/bills'); // Fetch bills from backend
+            if (!response.ok) throw new Error('Failed to fetch bills'); // Handle errors
+            bills = await response.json(); // Parse JSON response
+            updateBillsView(); // Update the table view with the fetched bills
+        } catch (error) {
+            console.error(error); // Log errors to the console
+            alert('Failed to load bills. Please try again.'); // Show alert on failure
+        }
+    }
+
+    function updateBillsView() {
+        const sortValue = sortSelect.value; // Get the selected sorting option
+        // Sort the bills array based on the selected criterion
+        const sortedBills = [...bills].sort((a, b) => {
+            if (sortValue === 'dueDateAsc') {
+                return new Date(a.dueDate) - new Date(b.dueDate); // Sort by due date ascending
+            } else if (sortValue === 'dueDateDesc') {
+                return new Date(b.dueDate) - new Date(a.dueDate); // Sort by due date descending
+            } else if (sortValue === 'amountAsc') {
+                return a.amount - b.amount; // Sort by amount ascending
+            } else if (sortValue === 'amountDesc') {
+                return b.amount - a.amount; // Sort by amount descending
+            }
+            return 0; // Default case (no sorting)
+        });
+
+        // Clear the table before rendering sorted bills
+        billsTableBody.innerHTML = '';
+
+        // Render each bill in the table
+        sortedBills.forEach(bill => {
+            const row = document.createElement('tr'); // Create a new row
+            row.innerHTML = `
+                <td>${bill.name}</td> <!-- Bill name -->
+                <td>£${bill.amount.toFixed(2)}</td> <!-- Bill amount -->
+                <td>${bill.dueDate}</td> <!-- Bill due date -->
+                <td>
+                    <button class="delete-btn">Delete</button> <!-- Button to delete the bill -->
+                    <button class="update-btn">Update</button> <!-- Button to update the bill -->
+                </td>
+            `;
+            billsTableBody.appendChild(row); // Add the row to the table
+
+            // Attach event listeners for delete and update buttons
+            row.querySelector('.delete-btn').addEventListener('click', () => deleteBill(bill.id));
+            row.querySelector('.update-btn').addEventListener('click', () => updateBill(bill.id, bill.name, bill.amount, bill.dueDate));
+        });
+
+        // Update the financial summary
+        updateFinancialSummary();
+    }
+
+    // Update the financial summary section
+    function updateFinancialSummary() {
+        const totalBills = bills.reduce((sum, bill) => sum + bill.amount, 0); // Calculate total bill amount
+        const remainingMoney = monthlyIncome - totalBills; // Calculate remaining money
+
+        totalIncomeSpan.textContent = monthlyIncome.toFixed(2); // Update total income display
+        totalBillsSpan.textContent = totalBills.toFixed(2); // Update total bills display
+        remainingMoneySpan.textContent = remainingMoney.toFixed(2); // Update remaining money display
+
+        // Add color coding to remaining money (green for positive, red for negative)
+        remainingMoneySpan.style.color = remainingMoney >= 0 ? 'green' : 'red';
+    }
+
+    // Handle income form submission
+    incomeForm.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form's default submission behavior
+        monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value); // Get income value
+
+        // Validate input
+        if (isNaN(monthlyIncome) || monthlyIncome <= 0) {
+            alert('Please enter a valid monthly income.'); // Show alert on invalid input
+            return;
+        }
+
+        updateFinancialSummary(); // Update financial summary with the new income
+        incomeForm.reset(); // Reset the income form
+    });
+
+    // Event listener for sorting bills
+    sortSelect.addEventListener('change', updateBillsView); // Update view on sorting option change
+
+    // Add a new bill when the bill form is submitted
+    billForm.addEventListener('submit', async function (event) {
+        event.preventDefault(); // Prevent default form submission
+
+        // Collect bill data from the form
+        const billData = {
+            name: document.getElementById('name').value.trim(),
+            amount: parseFloat(document.getElementById('amount').value),
+            dueDate: document.getElementById('dueDate').value
+        };
+
+        // Validate input fields
+        if (!billData.name || isNaN(billData.amount) || billData.amount <= 0 || !billData.dueDate) {
+            alert('Please provide valid bill details.'); // Show alert on invalid input
+            return;
+        }
+
+        // Send a POST request to add the bill
+        try {
+            await fetch('http://localhost:8080/bills', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(billData)
+            });
+            await fetchBills(); // Refresh the bills list
+            billForm.reset(); // Reset the bill form
+        } catch (error) {
+            console.error(error); // Log errors
+            alert('Failed to add bill.'); // Show alert on failure
+        }
+    });
+
+    // Delete a bill by its ID
+    async function deleteBill(id) {
+        try {
+            await fetch(`http://localhost:8080/bills/${id}`, { method: 'DELETE' }); // Send DELETE request
+            await fetchBills(); // Refresh the bills list
+        } catch (error) {
+            console.error(error); // Log errors
+            alert('Failed to delete bill.'); // Show alert on failure
+        }
+    }
+
+    // Update a bill by its ID
+    async function updateBill(id, currentName, currentAmount, currentDueDate) {
+        // Prompt user for new bill details
+        const newName = prompt('Enter new bill name:', currentName)?.trim();
+        const newAmount = parseFloat(prompt('Enter new bill amount:', currentAmount));
+
+        // Create a new date input to get the new due date
+        const newDueDateInput = document.createElement('input');
+        newDueDateInput.type = 'date';
+        newDueDateInput.value = currentDueDate; // Set initial value to current due date
+
+        // Prompt for new due date
+        const newDueDate = prompt('Enter new due date:', currentDueDate);
+
+        // Validate inputs
+        if (!newName || isNaN(newAmount) || newAmount <= 0 || !newDueDate) {
+            alert('Invalid input. Update cancelled.'); // Show alert on invalid input
+            return;
+        }
+
+        // Send a PUT request to update the bill
+        try {
+            await fetch(`http://localhost:8080/bills/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id,
+                    name: newName,
+                    amount: newAmount,
+                    dueDate: newDueDate  // Use the prompted due date
+                })
+            });
+            await fetchBills(); // Refresh the bills list
+        } catch (error) {
+            console.error(error); // Log errors
+            alert('Failed to update bill.'); // Show alert on failure
+        }
+    }
+
+    // Fetch bills when the page loads
+    fetchBills();
+</script>
+
+
+

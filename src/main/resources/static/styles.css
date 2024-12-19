@@ -1,0 +1,262 @@
+/* General Reset and Body Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f8;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Header Styling */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+}
+
+.header-icon {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 100px;
+    height: auto;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    color: #007BFF;
+    font-size: 40px;
+    margin: 0;
+}
+
+h2 {
+    color: #495057;
+}
+
+h3 {
+    color: #6c757d;
+}
+
+/* Ensure consistent width for forms and summary */
+.bills-section form,
+.summary {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Optional: Add hover effect to forms */
+.bills-section form:hover,
+.summary:hover {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+form input,
+form select,
+form button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+form button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #0056b3;
+}
+
+/* Table Styling */
+#bills-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+/* Table Header Styling */
+#bills-table thead {
+    background-color: #007BFF;
+    color: white;
+}
+
+#bills-table th {
+    padding: 12px;
+    text-align: center;
+}
+
+/* Table Body Styling */
+#bills-table tbody tr {
+    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+#bills-table tbody tr:hover {
+    background-color: #e2e6ea;
+}
+
+#bills-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+/* Button Styling within Table */
+#bills-table .delete-btn,
+#bills-table .update-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#bills-table .delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+#bills-table .delete-btn:hover {
+    background-color: #c82333;
+}
+
+#bills-table .update-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+#bills-table .update-btn:hover {
+    background-color: #218838;
+}
+
+/* Container and Layout Styling */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 20px;
+    flex-wrap: wrap;
+}
+
+.bills-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+}
+
+.bill-list-wrapper {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.bill-list-title {
+    width: 100%;
+    text-align: center;
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.bill-list-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+    box-sizing: border-box;
+    margin-top: 30px;
+}
+
+/* Sorting Dropdown Styling */
+.bill-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.sort-dropdown {
+    display: flex;
+    align-items: center;
+}
+
+.sort-dropdown label {
+    margin-right: 10px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 1200px) {
+    .container {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .bills-section {
+        width: 40%;
+    }
+
+    .bill-list-wrapper {
+        width: 60%;
+    }
+}
+
+/* Responsive header adjustments */
+@media (max-width: 768px) {
+    .header-icon {
+        width: 24px;
+        height: 24px;
+        left: 10px;
+    }
+
+    .header h1 {
+        font-size: 32px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
